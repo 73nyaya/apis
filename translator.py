@@ -6,10 +6,10 @@ from pathlib import Path
 # Define the path from index
 
 path_objects_translator = Path(Path.cwd() / 'Components' / 'Translators' / 'objectsTranslator.json')
-
+path_folders_translator = Path(Path.cwd() / 'Components' / 'Translators' / 'foldersTranslator.json')
 # Ensure the directory exists
 path_objects_translator.parent.mkdir(parents=True, exist_ok=True)
-
+path_folders_translator.parent.mkdir(parents=True, exist_ok=True)
 
 def get_objects_translator():
     try:
@@ -119,4 +119,55 @@ def delete_object_record(deal_id):
 
     # Write back to file
     with open(path_objects_translator, 'w') as f:
+        json.dump(data, f, indent=4)
+
+
+def get_folders_translator():
+    try:
+        with open(path_folders_translator, 'r') as f:
+            folders_translator = json.load(f)
+        return folders_translator
+
+    except FileNotFoundError:
+        folders_translator = {}
+        with open(path_folders_translator, 'w') as f:
+            json.dump(folders_translator, f)
+        print('objects translator has been created successfully.')
+        return folders_translator
+
+    except Exception as e:
+        print('Exception', e)
+
+def update_folders_translator(wrike_id_str, gdrive_id_str):
+    # Load existing data
+    try:
+        with open(path_folders_translator, 'r') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        data = {}
+
+    # Check if the value exists
+    if wrike_id_str not in data.keys():
+        # Add new key-value pair
+        data[wrike_id_str] = gdrive_id_str
+
+    # Write back to file
+    with open(path_folders_translator, 'w') as f:
+        json.dump(data, f, indent=4)
+
+def delete_folder_record(project_id):
+    # Load existing data
+    try:
+        with open(path_folders_translator, 'r') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        data = {}
+
+    # Check if the value exists
+    if project_id in data.keys():
+        # Add new key-value pair
+        del data[project_id]
+
+    # Write back to file
+    with open(path_folders_translator, 'w') as f:
         json.dump(data, f, indent=4)

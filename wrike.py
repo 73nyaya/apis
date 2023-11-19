@@ -98,11 +98,34 @@ class Project:
         response = requests.put(url=url, headers=headers, data=json.dumps(data))
 
         if response.status_code == 200:
-            print("Project status updated successfully!", f'Response: {response.text}')
+            print("Project status updated successfully!")
         else:
             print(f"Failed to update project status. Status code: {response.status_code}. Response: {response.text}")
 
         self.status_id = response.json().get('data', {})[0].get('project', {}).get('customStatusId')
+
+    def change_name(self, new_name):
+        url = f"https://www.wrike.com/api/v4/folders/{self.project_id}"
+        headers = {
+            "Authorization": f"Bearer {self.access_token}",
+            "Content-Type": "application/json"}
+
+        data = {
+            "title": str(new_name)
+        }
+        response = requests.put(url=url, headers=headers, data=json.dumps(data))
+        if response.status_code == 200:
+            print("Project name updated successfully!", f'Response: {response.text}')
+        else:
+            print(f"Failed to update project name. Status code: {response.status_code}. Response: {response.text}")
+
+        self.title = response.json().get('data', {})[0].get('title', {})
+
+    def enable(self):
+        try:
+            self.change_name("J" + self.title[1:])
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
 
     def delete(self):
         url = f"https://www.wrike.com/api/v4/folders/{self.project_id}"
@@ -138,4 +161,8 @@ def get_project_id(project_name_str):
         "Content-Type": "application/json"}
     response = requests.get(url, headers=headers)
     project_id = find_dict(response.json(), 'title', project_name_str)
+    if project_id is not None:
+        print("project id obtained")
     return project_id
+
+

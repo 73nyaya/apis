@@ -5,6 +5,7 @@ from wrike import Project
 from translator import get_objects_translator, get_status_translator
 from access_tokens import get_access_token
 from handlers import home, respond, handle_auth
+import threading
 
 app = Flask(__name__)
 
@@ -12,7 +13,7 @@ app = Flask(__name__)
 access_token = None
 refresh_token = None
 
-
+lock = threading.Lock()
 # home page
 @app.route('/')
 def home_route():
@@ -22,7 +23,8 @@ def home_route():
 # Listen when a deal stage is "Offer elaboration" and creates a project in Wrike with the same stage.
 @app.route('/webhook', methods=['POST'])
 def respond_route():
-    return respond()
+    with lock:
+        return respond()
 
 
 @app.route('/auth', methods=['GET'])
