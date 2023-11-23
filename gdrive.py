@@ -1,5 +1,5 @@
 from Google import Create_Service
-import json
+
 
 CLIENT_SECRET_FILE = 'Components/Credentials/credentials.json'
 API_NAME = 'drive'
@@ -40,7 +40,9 @@ def copy_folder_to(source_folder_id, source_drive_id, destination_folder_id, des
         else:
             print('Files:')
             search_files = service.files().list(
-                q=f"'{destination_folder['id']}' in parents and trashed=false", fields="files(id, name)", corpora='drive',
+                q=f"'{destination_folder['id']}' in parents and trashed=false",
+                fields="files(id, name)",
+                corpora='drive',
                 driveId=destination_drive_id,
                 supportsAllDrives=True, includeItemsFromAllDrives=True).execute()
             list_of_files = search_files.get('files', [])
@@ -56,7 +58,8 @@ def copy_folder_to(source_folder_id, source_drive_id, destination_folder_id, des
                         'mimeType': 'application/vnd.google-apps.folder',
                         'parents': [root_folder_id]
                     }
-                    copy_folder_to(metadata['id'], source_drive_id, root_folder_id, destination_drive_id, metadata['name'])
+                    copy_folder_to(metadata['id'], source_drive_id, root_folder_id, destination_drive_id,
+                                   metadata['name'])
                 else:
                     if item['name'] not in [i['name'] for i in list_of_files]:
                         try:
@@ -68,24 +71,27 @@ def copy_folder_to(source_folder_id, source_drive_id, destination_folder_id, des
                         print('file already exist')
         return destination_folder['id']
     else:
-        return None
         print('folder already exist')
+        return None
 
-#copy_folder_to('1_0pk9JF2y9xkOiJCMmfoJp8RHRHZlvzU', '0AIYZe1bK2f__Uk9PVA', '1k1pcBfoXmLq6WlRPCF0AjQi4VxTK0uUB', '0AIYZe1bK2f__Uk9PVA', 'clone')
+
+# copy_folder_to('1_0pk9JF2y9xkOiJCMmfoJp8RHRHZlvzU', '0AIYZe1bK2f__Uk9PVA', '1k1pcBfoXmLq6WlRPCF0AjQi4VxTK0uUB',
+# '0AIYZe1bK2f__Uk9PVA', 'clone')
+
 
 def move_file(file_id, to_id):
     try:
         file = service.files().get(fileId=file_id,
-                                      supportsAllDrives=True,
-                                      fields='parents').execute()
+                                   supportsAllDrives=True,
+                                   fields='parents').execute()
         old_parents = ",".join(file.get('parents'))
         print(file)
         print(old_parents)
         file = (service.files().update(fileId=file_id,
-                                      addParents=to_id,
-                                      removeParents=old_parents,
-                                      supportsAllDrives=True,
-                                      fields='id, parents').execute()
+                                       addParents=to_id,
+                                       removeParents=old_parents,
+                                       supportsAllDrives=True,
+                                       fields='id, parents').execute()
                 )
         print('file moved')
         print(file.get('parents'))

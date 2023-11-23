@@ -3,6 +3,7 @@ import json
 from utilities import find_dict
 from access_tokens import get_access_token
 
+
 # status_id = "IEAEINT7JMDWY7CM"
 # {
 #            "id": "IEAEINT7I5CCL7HU",
@@ -62,7 +63,6 @@ class Project:
         # Suppose the response is a JSON object and status is one of the fields
         self.status_id = response.json().get('data', {}).get('project', {}).get('customStatusId')
         print(self.status_id)
-        print
 
         return self.status_id
 
@@ -78,10 +78,8 @@ class Project:
         # Suppose the response is a JSON object and status is one of the fields
         status_id = response.json().get('data')[0].get("project").get("customStatusId")
         print(status_id)
-        print
 
         return status_id
-
 
     def update_status(self, target_status_str):
 
@@ -119,11 +117,15 @@ class Project:
         else:
             print(f"Failed to update project name. Status code: {response.status_code}. Response: {response.text}")
 
-        self.title = response.json().get('data', {})[0].get('title', {})
+        self.project_name = response.json().get('data', {})[0].get('title', {})
 
     def enable(self):
         try:
-            self.change_name("J" + self.title[1:])
+            self.change_name("J" + self.project_name[1:])
+            self.move_project('IEAEINT7I4UAB54L')
+            self.write_comment(
+                'Hi <a class="stream-user-id avatar" rel="KX72MPGT">@Developers</a>! This offer has been accepted. '
+                'Please, start scheduling the work.')
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
 
@@ -137,6 +139,43 @@ class Project:
             print("Project deleted successfully!", f'Response: {response.text}')
         else:
             print(f"Failed to delete project. Status code: {response.status_code}. Response: {response.text}")
+
+    def move_project(self, destination_folder_id):
+        url = f"https://www.wrike.com/api/v4/folders/{self.project_id}?"
+        headers = {
+            "Authorization": f"Bearer {self.access_token}",
+            "Content-Type": "application/json"}
+
+        data = {
+            'addParents': [str(destination_folder_id)],
+            'removeParents': ['IEAEINT7I5AVW2QH'],
+            "project": {
+                "ownersAdd": ['KUAJV4AW']  # Leo B
+            }
+        }
+        response = requests.put(url=url, headers=headers, data=json.dumps(data))
+
+        if response.status_code == 200:
+            print("Project moved successfully!")
+        else:
+            print(f"Failed to move project. Status code: {response.status_code}. Response: {response.text}")
+
+    def write_comment(self, message_str):
+        url = f"https://www.wrike.com/api/v4/folders/{self.project_id}?"
+        headers = {
+            "Authorization": f"Bearer {self.access_token}",
+            "Content-Type": "application/json"}
+
+        data = {
+            "text": message_str
+        }
+        response = requests.put(url=url, headers=headers, data=json.dumps(data))
+
+        if response.status_code == 200:
+            print("comment successfully!")
+        else:
+            print(f"Failed to comment. Status code: {response.status_code}. Response: {response.text}")
+
 
 def get_project_name(project_id_str):
     access_token = get_access_token('wrike')
@@ -164,5 +203,3 @@ def get_project_id(project_name_str):
     if project_id is not None:
         print("project id obtained")
     return project_id
-
-

@@ -1,19 +1,20 @@
 import requests
-from flask import Flask, request
+from flask import request
 from translator import get_status_translator, get_objects_translator, update_objects_translator, \
-    update_status_translator, delete_object_record,get_folders_translator, update_folders_translator,\
-    delete_folder_record
-from access_tokens import get_access_token
+    delete_object_record, get_folders_translator, update_folders_translator
 from hubspot import get_deal_properties
 from wrike import Project, get_project_id, get_project_name
 from gdrive import copy_folder_to, move_file
-import time, random
+import time
 
 
 def home():
     return "Hello, this is the home page!"
 
-#install url https://app.hubspot.com/oauth/authorize?client_id=b2bcc660-28f7-4995-b224-0e0686f6fa96&redirect_uri=https://mincka-servers.com/auth&scope=crm.objects.deals.read
+# install url https://app.hubspot.com/oauth/authorize?client_id=b2bcc660-28f7-4995-b224-0e0686f6fa96&redirect_uri=https:
+# //mincka-servers.com/auth&scope=crm.objects.deals.read
+
+
 def handle_auth():
     code = request.args.get('code')
     # Use this authorization code to get an access token and refresh token
@@ -103,18 +104,14 @@ def respond():
                     update_folders_translator(wrike_id_str=project.project_id,
                                               gdrive_id_str=folder_id)
 
-            if deal_status == '194277368': #offer submitted
+            if deal_status == '194277368':  # offer submitted
                 move_file(file_id=folders_translator[project.project_id],
                           to_id='1RmjUGM4eg1fgOJj8uT1fEz-fObKEqzIg')
 
-            if deal_status == 'closedwon': #closed won
+            if deal_status == 'closedwon':  # closed won
+                project.project_name = get_project_name(project.project_id)
                 project.enable()
                 print('Project turned from Q to J')
-                folder_id = move_file(file_id=folders_translator[project.project_id],
-                                      to_id='1RmjUGM4eg1fgOJj8uT1fEz-fObKEqzIg')
-                if folder_id is not None:
-                    update_folders_translator(wrike_id_str=project.project_id,
-                                              gdrive_id_str=folder_id)
 
         elif subscription_type == 'deal.creation':
             if deal_id not in objects_translator.keys():
