@@ -4,7 +4,7 @@ import json
 from wrike import Project
 from translator import get_objects_translator, get_status_translator
 from access_tokens import get_access_token
-from handlers import home, respond, handle_auth
+from handlers import home, respond, respond_wrike, handle_auth
 import threading
 
 app = Flask(__name__)
@@ -26,10 +26,14 @@ def respond_route():
     with lock:
         return respond()
 
+@app.route('/wrikelistener', methods=['POST'])
+def respond_wrike_route():
+    with lock:
+        return respond_wrike()
 
 @app.route('/auth', methods=['GET'])
 def handle_auth_route():
-    return handle_auth
+    return handle_auth()
 
 
 if __name__ == '__main__':

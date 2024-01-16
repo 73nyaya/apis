@@ -3,17 +3,19 @@ from flask import request
 from translator import get_status_translator, get_objects_translator, update_objects_translator, \
     delete_object_record, get_folders_translator, update_folders_translator
 from hubspot import get_deal_properties
-from wrike import Project, get_project_id, get_project_name
+from wrike import Project, get_project_id, get_project_name, get_project_info
 from gdrive import copy_folder_to, move_file
 import time
-
+from access_tokens import update_token
 
 def home():
     return "Hello, this is the home page!"
 
+
 # install url https://app.hubspot.com/oauth/authorize?client_id=b2bcc660-28f7-4995-b224-0e0686f6fa96&redirect_uri=https:
 # //mincka-servers.com/auth&scope=crm.objects.deals.read
-
+# install url https://app.hubspot.com/oauth/authorize?client_id=b2bcc660-28f7-4995-b224-0e0686f6fa96&redirect_uri=https:
+# //mincka-servers.com/auth&scope=crm.objects.deals.read%20crm.objects.deals.write
 
 def handle_auth():
     code = request.args.get('code')
@@ -33,16 +35,17 @@ def handle_auth():
     access_token = tokens.get('access_token')
     refresh_token = tokens.get('refresh_token')
 
+    update_token('hubspot', access_token)
     print("Received access token: ", access_token)
     print("Received refresh token: ", refresh_token)
 
-    return {"Authorization successful!", 200}
+    return "Authorization successful!", 200
 
 
 def respond():
     try:
         print(time.time())
-        #time.sleep((0.1+random.random())/20)
+        # time.sleep((0.1+random.random())/20)
         # read the data from the POST method.
         data = request.json[0]
         print(data)
@@ -92,12 +95,13 @@ def respond():
                     except Exception as e:
                         print(f"An unexpected error occurred: {e}")
 
-            if deal_status == '184967120' and objects_translator[deal_id] not in folders_translator: # offer elaboration
+            if deal_status == '184967120' and objects_translator[
+                deal_id] not in folders_translator:  # offer elaboration
                 if deal_id in objects_translator.keys():
                     project_name = get_project_name(project.project_id)
                 folder_id = copy_folder_to(source_folder_id='130V1Kn6cIso_jUIR6YQx8ussuWT1NK4q',
                                            source_drive_id='0AJLZXfZRbFjuUk9PVA',
-                                           destination_folder_id='1Lx8RYosvOz-XO7VEjbu0G9GVlIvx68ic',
+                                           destination_folder_id='14_cfdRROq-jV8IDh0jfmIin8vNB0Y8I5',
                                            destination_drive_id='0AIYZe1bK2f__Uk9PVA',
                                            project_name=project_name)
                 if folder_id is not None:
@@ -106,7 +110,7 @@ def respond():
 
             if deal_status == '194277368':  # offer submitted
                 move_file(file_id=folders_translator[project.project_id],
-                          to_id='1RmjUGM4eg1fgOJj8uT1fEz-fObKEqzIg')
+                          to_id='14bpYs33tvmQJsXcKQBQAncUXl4NjBEjX')
 
             if deal_status == 'closedwon':  # closed won
                 project.project_name = get_project_name(project.project_id)
@@ -122,7 +126,8 @@ def respond():
                 # Create a project in Wrike with the same name as the deal
 
                 project = Project(project_name=deal_name,
-                                  parent_id='IEAEINT7I5AVW2QH', # development IEAEINT7I5CCL7HU deployment IEAEINT7I5AVW2QH
+                                  parent_id='IEAEINT7I5AVW2QH',
+                                  # development IEAEINT7I5CCL7HU deployment IEAEINT7I5AVW2QH
                                   status_id=project_status)
                 update_objects_translator(hubspot_id_str=deal_id,
                                           wrike_id_str=project.project_id)
@@ -178,3 +183,77 @@ def respond():
         print(f"An unexpected error occurred in the handler: {e}")
     return {'status': 'success'}
 
+
+# Define your event handling functions here for the wrike listener
+
+def handle_folder_created(data):  # apply for projects
+    project_id = data.get('folderId')
+    project_info = get_project_info(project_id)
+    project_name = project_info.get('title')
+    project_status = project_info.get('project').get('customStatusId')
+
+
+def handle_folder_deleted(data):
+    # Process event type B
+    pass
+
+
+def handle_folder_title_changed(data):
+    # Process event type C
+    pass
+
+
+def handle_folder_comment_added(data):
+    # Process event type D
+    pass
+
+
+def handle_custom_field_changed(data):
+    # Process event type E
+    pass
+
+
+def handle_project_status_changed(data):
+    # Process event type F
+    pass
+
+
+# This dictionary maps event types to their corresponding functions
+
+event_handlers = {
+    'FolderCreated': handle_folder_created,
+    'FolderDeleted': handle_folder_deleted,
+    'FolderTitleChanged': handle_folder_title_changed,
+    'FolderCommentAdded': handle_folder_comment_added,
+    'FolderCustomFieldChanged': handle_custom_field_changed,
+    'ProjectStatusChanged': handle_project_status_changed,
+}
+
+
+def respond_wrike()-> None:
+    try:
+        print(time.time())
+
+        # read the data from the POST method.
+        data = request.json[0]
+
+        print(data)
+
+        # Parse the JSON data from the request
+        event_type = data.get('eventType')
+
+        # Find the appropriate handler for the event type
+        handler = event_handlers.get(event_type)
+
+        # If a handler exists, call it with the event data
+        if handler:
+            handler(data)
+            return 'Event handled', 200
+        else:
+            return 'No handler for event type', 400
+
+
+
+    except Exception as e:
+        print(f"An unexpected error occurred in the wrike handler: {e}")
+    return {'status': 'success'}

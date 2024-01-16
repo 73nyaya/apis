@@ -192,6 +192,20 @@ def get_project_name(project_id_str):
     return folder_name
 
 
+def get_project_info(project_id_str):
+    access_token = get_access_token('wrike')
+    # Here, you would usually make a GET request to Wrike API to fetch the folder name.
+    # The request might look something like this:
+    url = f"https://www.wrike.com/api/v4/folders/{project_id_str}"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"}
+    response = requests.get(url, headers=headers)
+    # Suppose the response is a JSON object and status is one of the fields
+
+    return response.json().get('data', {})[0]
+
+
 def get_project_id(project_name_str):
     access_token = get_access_token('wrike')
     url = 'https://www.wrike.com/api/v4/folders?project=true'
