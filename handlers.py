@@ -24,7 +24,7 @@ def handle_auth():
         'grant_type': 'authorization_code',
         'client_id': 'b2bcc660-28f7-4995-b224-0e0686f6fa96',
         'client_secret': '94190740-1201-49a2-946b-9ca4e407704b',
-        'redirect_uri': 'mincka-servers.com/auth',
+        'redirect_uri': 'https://mincka-servers.com/auth',
         'code': code
     }
 
