@@ -1,13 +1,15 @@
 import requests
-from utilities import find_dict
+from translator import get_status_translator
+from utilities import find_dict, get_key_from_value
 from access_tokens import get_access_token
 import json
 
+
 class Deal:
-    def __init__(self, deal_name = None, deal_id = None):
+    def __init__(self, deal_name = None, deal_id = None, deal_stage = None):
         self.deal_name = deal_name
         self.deal_id = deal_id
-        self.deal_stage = get_deal_properties(deal_id).get('dealstage')
+        self.deal_stage = deal_stage
         self.access_token = get_access_token(platform_str='hubspot')
 
         if not deal_id:

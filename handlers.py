@@ -2,9 +2,10 @@ import requests
 from flask import request
 from translator import get_status_translator, get_objects_translator, update_objects_translator, \
     delete_object_record, get_folders_translator, update_folders_translator
-from hubspot import get_deal_properties
+from hubspot import get_deal_properties, Deal
 from wrike import Project, get_project_id, get_project_name, get_project_info
 from gdrive import copy_folder_to, move_file
+from utilities import get_key_from_value
 import time
 from access_tokens import update_token
 
@@ -191,7 +192,9 @@ def handle_folder_created(data):  # apply for projects
     project_info = get_project_info(project_id)
     project_name = project_info.get('title')
     project_status = project_info.get('project').get('customStatusId')
-
+    deal_status = get_key_from_value(get_status_translator(), project_status)
+    new_deal = Deal(deal_name=project_name, deal_stage=deal_status)
+    update_objects_translator(hubspot_id_str=new_deal.deal_id, wrike_id_str=project_id)
 
 def handle_folder_deleted(data):
     # Process event type B

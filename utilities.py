@@ -15,3 +15,9 @@ def find_dict(nested_dict, target_key, target_value):
         print('value found!')
     else:
         print('not found')
+
+def get_key_from_value(dictionary, value):
+    for key, val in dictionary.items():
+        if val == value:
+            return key
+    return None
