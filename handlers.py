@@ -64,7 +64,8 @@ def validate_hubspot_token(token):
 
         url = 'https://api.hubapi.com/oauth/v1/token'
         headers = {
-            'Content-Type': 'application/x-www-form-urlencoded'
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': f'''Bearer {get_access_token('hubspot')}'''
         }
         # Replace with your actual refresh token and other required credentials
         refresh_token = get_access_token('hubspot_refresh')
