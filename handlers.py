@@ -7,7 +7,8 @@ from wrike import Project, get_project_id, get_project_name, get_project_info
 from gdrive import copy_folder_to, move_file
 from utilities import get_key_from_value
 import time
-from access_tokens import update_token
+from access_tokens import update_token, get_access_token
+import json
 
 def home():
     return "Hello, this is the home page!"
@@ -37,15 +38,65 @@ def handle_auth():
     refresh_token = tokens.get('refresh_token')
 
     update_token('hubspot', access_token)
+    update_token('hubspot_refresh', refresh_token)
     print("Received access token: ", access_token)
     print("Received refresh token: ", refresh_token)
 
     return "Authorization successful!", 200
 
 
+def validate_hubspot_token(token):
+    # The API endpoint you're using for the test request
+    url = 'https://api.example.com/some_endpoint'
+    access_token = token
+    headers = {
+        'Authorization': f'Bearer {access_token}'
+    }
+    response = requests.get(url, headers=headers)
+
+    # Check the response to determine if the access token is valid
+    if response.status_code == 200:
+        # The access token is valid
+        print("Access token is valid.")
+    elif response.status_code == 401:
+        # The access token is invalid or expired
+        print("Access token is invalid or expired. Generating a new token")
+
+        url = 'https://api.hubapi.com/oauth/v1/token'
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        # Replace with your actual refresh token and other required credentials
+        refresh_token = get_access_token('hubspot_refresh')
+
+        # Prepare the data payload for the refresh request
+        data = {
+            'grant_type': 'refresh_token',
+            'refresh_token': refresh_token,
+            'client_id': 'b2bcc660-28f7-4995-b224-0e0686f6fa96',
+            'client_secret': '94190740-1201-49a2-946b-9ca4e407704b'
+        }
+        response = requests.put(url=url, headers=headers, data=json.dumps(data))
+
+        if response.status_code == 200:
+            tokens = response.json()
+
+            access_token = tokens.get('access_token')
+            refresh_token = tokens.get('refresh_token')
+
+            update_token('hubspot', access_token)
+            update_token('hubspot_refresh', refresh_token)
+        else:
+            print(f"Failed to move project. Status code: {response.status_code}. Response: {response.text}")
+    else:
+        # Handle other potential errors
+        print(f"An error occurred: {response.status_code}")
+
+
 def respond():
     try:
         print(time.time())
+        validate_hubspot_token(get_access_token('hubspot'))
         # time.sleep((0.1+random.random())/20)
         # read the data from the POST method.
         data = request.json[0]
@@ -196,6 +247,7 @@ def handle_folder_created(data):  # apply for projects
     new_deal = Deal(deal_name=project_name, deal_stage=deal_status)
     update_objects_translator(hubspot_id_str=new_deal.deal_id, wrike_id_str=project_id)
 
+
 def handle_folder_deleted(data):
     # Process event type B
     pass
@@ -233,8 +285,9 @@ event_handlers = {
 }
 
 
-def respond_wrike()-> None:
+def respond_wrike():
     try:
+        validate_hubspot_token(get_access_token('hubspot'))
         print(time.time())
 
         # read the data from the POST method.
