@@ -30,7 +30,7 @@ class Deal:
 
         response = requests.post(url, headers=headers, data=json.dumps(data))
 
-        if response.status_code == 200:
+        if response.status_code == 201:
             print("Deal created successfully!", f'Response: {response.text}')
         else:
             print(f"Failed to create Deal. Status code: {response.status_code}. Response: {response.text}")
