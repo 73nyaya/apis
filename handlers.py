@@ -80,7 +80,13 @@ def validate_hubspot_token(token):
             'client_secret': '94190740-1201-49a2-946b-9ca4e407704b'
         }
         response = requests.post(url=url, headers=headers, data=json.dumps(data))
+        request_url = response.request.url
+        request_headers = response.request.headers
+        request_body = response.request.body
 
+        print("Request URL:", request_url)
+        print("Request headers:", json.dumps(dict(request_headers), indent=4))
+        print("Request body:", request_body)
         if response.status_code == 200:
             tokens = response.json()
 
