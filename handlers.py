@@ -87,8 +87,9 @@ def validate_hubspot_token(token):
 
             update_token('hubspot', access_token)
             update_token('hubspot_refresh', refresh_token)
+            print(f"Tokens updated. Response: {response.text}")
         else:
-            print(f"Failed to move project. Status code: {response.status_code}. Response: {response.text}")
+            print(f"Failed to obtain tokens. Status code: {response.status_code}. Response: {response.text}")
     else:
         # Handle other potential errors
         print(f"An error occurred: {response.status_code}")
