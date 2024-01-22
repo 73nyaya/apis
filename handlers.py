@@ -259,8 +259,13 @@ def handle_folder_created(data):  # apply for projects
 
 
 def handle_folder_deleted(data):
-    # Process event type B
-    pass
+    project_id = data.get('folderId')
+    deal_id = get_key_from_value(get_objects_translator(), project_id)
+    if deal_id is None:
+        print('Project not in translator')
+    else:
+        deal = Deal(deal_id=deal_id)
+        deal.delete_deal()
 
 
 def handle_folder_title_changed(data):

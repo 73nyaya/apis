@@ -85,6 +85,24 @@ class Deal:
         return response.json().get('id', {})
 
 
+    def delete_deal(self):
+        # POST request to Hubspot API to update a deal
+        # The request might look something like this:
+        url = f"https://api.hubapi.com/crm/v3/objects/deals/{self.deal_id}"
+        headers = {"Authorization": f"Bearer {self.access_token}",
+                   "Content-Type": "application/json"}
+
+        response = requests.delete(url, headers=headers)
+
+        if response.status_code == 200:
+            print("Deal stage deleted successfully!", f'Response: {response.text}')
+        else:
+            print(f"Failed to delete Deal. Status code: {response.status_code}. Response: {response.text}")
+
+        # Suppose the response is a JSON object and id is one of the fields
+        return response.json().get('id', {})
+
+
 
 def get_deal_properties(deal_id_str):
     access_token_str = get_access_token('hubspot')
