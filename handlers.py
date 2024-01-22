@@ -51,7 +51,6 @@ def validate_hubspot_token(token):
     url = f'https://api.hubapi.com/oauth/v1/access-tokens/{access_token}'
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': f'Bearer {access_token}'
     }
     response = requests.get(url, headers=headers)
 
