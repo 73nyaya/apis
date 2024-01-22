@@ -58,7 +58,7 @@ def validate_hubspot_token(token):
     if response.status_code == 200:
         # The access token is valid
         print("Access token is valid.")
-    elif response.status_code == 401:
+    elif response.status_code == 404 or response.status_code == 401:
         # The access token is invalid or expired
         print("Access token is invalid or expired. Generating a new token")
 
@@ -290,6 +290,7 @@ event_handlers = {
 def respond_wrike():
     try:
         validate_hubspot_token(get_access_token('hubspot'))
+        print('Token validated.')
         print(time.time())
 
         # read the data from the POST method.
