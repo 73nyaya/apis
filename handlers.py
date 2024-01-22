@@ -50,6 +50,7 @@ def validate_hubspot_token(token):
     access_token = token
     url = f'https://api.hubapi.com/oauth/v1/access-tokens/{access_token}'
     headers = {
+        'Content-Type': 'application/json',
         'Authorization': f'Bearer {access_token}'
     }
     response = requests.get(url, headers=headers)
@@ -58,7 +59,7 @@ def validate_hubspot_token(token):
     if response.status_code == 200:
         # The access token is valid
         print("Access token is valid.")
-    elif response.status_code == 404 or response.status_code == 401:
+    elif response.status_code == 404 or response.status_code == 401 or response.status_code==400:
         # The access token is invalid or expired
         print("Access token is invalid or expired. Generating a new token")
 
