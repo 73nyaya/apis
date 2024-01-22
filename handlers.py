@@ -79,7 +79,7 @@ def validate_hubspot_token(token):
             'client_id': 'b2bcc660-28f7-4995-b224-0e0686f6fa96',
             'client_secret': '94190740-1201-49a2-946b-9ca4e407704b'
         }
-        response = requests.post(url=url, headers=headers, data=json.dumps(data))
+        response = requests.post(url=url, headers=headers, data=data)
         request_url = response.request.url
         request_headers = response.request.headers
         request_body = response.request.body
