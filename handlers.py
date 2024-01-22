@@ -266,7 +266,7 @@ def handle_folder_deleted(data):
     else:
         deal = Deal(deal_id=deal_id)
         deal.delete_deal()
-
+        delete_object_record(deal_id)
 
 def handle_folder_title_changed(data):
     project_name = data.get('title')
