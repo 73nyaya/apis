@@ -59,14 +59,14 @@ def validate_hubspot_token(token):
     if response.status_code == 200:
         # The access token is valid
         print("Access token is valid.")
-    elif response.status_code == 404 or response.status_code == 401 or response.status_code==400:
+    elif response.status_code == 404 or response.status_code == 401 or response.status_code == 400:
         # The access token is invalid or expired
         print("Access token is invalid or expired. Generating a new token")
 
         url = 'https://api.hubapi.com/oauth/v1/token'
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': f'''Bearer {get_access_token('hubspot')}'''
+            'Authorization': f'Bearer {access_token}'
         }
         # Replace with your actual refresh token and other required credentials
         refresh_token = get_access_token('hubspot_refresh')
