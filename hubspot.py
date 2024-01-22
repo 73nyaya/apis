@@ -39,6 +39,51 @@ class Deal:
         return response.json().get('id', {})
 
 
+    def update_deal_name(self, value):
+        # POST request to Hubspot API to update a deal
+        # The request might look something like this:
+        url = f"https://api.hubapi.com/crm/v3/objects/deals/{self.deal_id}"
+        headers = {"Authorization": f"Bearer {self.access_token}",
+                   "Content-Type": "application/json"}
+        data = {
+            'properties': {
+                'dealname': value,
+            }
+        }
+
+        response = requests.patch(url, headers=headers, data=json.dumps(data))
+
+        if response.status_code == 200:
+            print("Deal name updated successfully!", f'Response: {response.text}')
+        else:
+            print(f"Failed to update Deal. Status code: {response.status_code}. Response: {response.text}")
+
+        # Suppose the response is a JSON object and id is one of the fields
+        return response.json().get('id', {})
+
+
+    def update_deal_stage(self, value):
+        # POST request to Hubspot API to update a deal
+        # The request might look something like this:
+        url = f"https://api.hubapi.com/crm/v3/objects/deals/{self.deal_id}"
+        headers = {"Authorization": f"Bearer {self.access_token}",
+                   "Content-Type": "application/json"}
+        data = {
+            'properties': {
+                'dealstage': value,
+            }
+        }
+
+        response = requests.patch(url, headers=headers, data=json.dumps(data))
+
+        if response.status_code == 200:
+            print("Deal stage updated successfully!", f'Response: {response.text}')
+        else:
+            print(f"Failed to update Deal. Status code: {response.status_code}. Response: {response.text}")
+
+        # Suppose the response is a JSON object and id is one of the fields
+        return response.json().get('id', {})
+
 
 
 def get_deal_properties(deal_id_str):

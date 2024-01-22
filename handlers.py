@@ -65,7 +65,9 @@ def validate_hubspot_token(token):
         url = 'https://api.hubapi.com/oauth/v1/token'
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': f'Bearer {access_token}'
+            'Authorization': f'Bearer {access_token}',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept': '*/*'
         }
         # Replace with your actual refresh token and other required credentials
         refresh_token = get_access_token('hubspot_refresh')
@@ -256,8 +258,11 @@ def handle_folder_deleted(data):
 
 
 def handle_folder_title_changed(data):
-    # Process event type C
-    pass
+    project_name = data.get('title')
+    project_id = data.get('folderId')
+    deal_id = get_key_from_value(get_objects_translator(), project_id)
+    deal = Deal(deal_id=deal_id)
+    deal.update_deal_name(project_name)
 
 
 def handle_folder_comment_added(data):
@@ -271,8 +276,15 @@ def handle_custom_field_changed(data):
 
 
 def handle_project_status_changed(data):
-    # Process event type F
-    pass
+    project_status = data.get('customStatusId')
+    project_id = data.get('taskId')
+    deal_id = get_key_from_value(get_objects_translator(), project_id)
+    deal = Deal(deal_id=deal_id)
+    deal_status = get_key_from_value(get_status_translator(), project_status)
+    if deal_status is None:
+        print('Status not in sales pipeline.')
+    else:
+        deal.update_deal_stage(deal_status)
 
 
 # This dictionary maps event types to their corresponding functions
