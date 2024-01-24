@@ -126,6 +126,7 @@ class Project:
             self.write_comment(
                 'Hi <a class="stream-user-id avatar" rel="KX72MPGT">@Developers</a>! This offer has been accepted. '
                 'Please, start scheduling the work.')
+            self.create_adm_folder()
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
 
@@ -175,6 +176,25 @@ class Project:
             print("comment successfully!")
         else:
             print(f"Failed to comment. Status code: {response.status_code}. Response: {response.text}")
+
+    def create_adm_folder(self):
+        # POST request to Wrike API to create a new project
+        # The request might look something like this:
+        url = f"https://www.wrike.com/api/v4/folders/{self.project_id}/folders/"
+        headers = {"Authorization": f"Bearer {self.access_token}",
+                   "Content-Type": "application/json"}
+        data = {
+            "title": self.project_name[:7] + "(ADM) " + self.project_name[7:],
+        }
+
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+
+        if response.status_code == 200:
+            print("ADM folder created successfully!", f'Response: {response.text}')
+        else:
+            print(f"Failed to create ADM folder. Status code: {response.status_code}. Response: {response.text}")
+
+    
 
 
 def get_project_name(project_id_str):
