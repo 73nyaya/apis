@@ -112,6 +112,7 @@ def respond():
         data = request.json[0]
         print(data)
         subscription_type = data.get('subscriptionType')
+        change_source = data.get('changeSource')
         property_name = data.get('propertyName')
         deal_id = str(data.get("objectId"))
         # call and get the translator for objects
@@ -119,7 +120,7 @@ def respond():
         objects_translator = get_objects_translator()
         folders_translator = get_folders_translator()
 
-        if subscription_type == 'deal.propertyChange' and property_name == "dealstage":
+        if subscription_type == 'deal.propertyChange' and property_name == "dealstage" and change_source != 'INTEGRATION':
             deal_properties = get_deal_properties(deal_id_str=deal_id)
             update = False
             deal_status = str(deal_properties.get('dealstage'))
@@ -215,7 +216,7 @@ def respond():
                 except Exception as e:
                     print(f"An unexpected error occurred: {e}")
 
-        if subscription_type == 'deal.propertyChange' and property_name == "dealname":
+        if subscription_type == 'deal.propertyChange' and property_name == "dealname" and change_source != 'INTEGRATION':
 
             new_name = str(data.get("propertyValue"))
             if deal_id in objects_translator.keys():
@@ -254,8 +255,11 @@ def handle_folder_created(data):  # apply for projects
     project_name = project_info.get('title')
     project_status = project_info.get('project').get('customStatusId')
     deal_status = get_key_from_value(get_status_translator(), project_status)
-    new_deal = Deal(deal_name=project_name, deal_stage=deal_status)
-    update_objects_translator(hubspot_id_str=new_deal.deal_id, wrike_id_str=project_id)
+    if deal_status:
+        new_deal = Deal(deal_name=project_name, deal_stage=deal_status)
+        update_objects_translator(hubspot_id_str=new_deal.deal_id, wrike_id_str=project_id)
+    else:
+        print('project status not found in hubspot. Aborting deal creation.')
 
 
 def handle_folder_deleted(data):
@@ -272,8 +276,10 @@ def handle_folder_title_changed(data):
     project_name = data.get('title')
     project_id = data.get('folderId')
     deal_id = get_key_from_value(get_objects_translator(), project_id)
+    deal_old_name = get_deal_properties(deal_id).get('dealname')
     deal = Deal(deal_id=deal_id)
-    deal.update_deal_name(project_name)
+    if deal_old_name[1:] != project_name[1:]:
+        deal.update_deal_name("Q" + project_name[1:])
 
 
 def handle_folder_comment_added(data):
@@ -290,12 +296,19 @@ def handle_project_status_changed(data):
     project_status = data.get('customStatusId')
     project_id = data.get('taskId')
     deal_id = get_key_from_value(get_objects_translator(), project_id)
-    deal = Deal(deal_id=deal_id)
-    deal_status = get_key_from_value(get_status_translator(), project_status)
-    if deal_status is None:
-        print('Status not in sales pipeline.')
+    if deal_id:
+        deal = Deal(deal_id=deal_id)
+        deal_status = get_key_from_value(get_status_translator(), project_status)
+        deal_old_status = get_deal_properties(deal_id)
+        if deal_status != deal_old_status:
+            if deal_status is None:
+                print('Status not in sales pipeline.')
+            else:
+                deal.update_deal_stage(deal_status)
+        else:
+            print('deal status has not changed')
     else:
-        deal.update_deal_stage(deal_status)
+        print('deal id not found.')
 
 
 # This dictionary maps event types to their corresponding functions
@@ -339,3 +352,5 @@ def respond_wrike():
     except Exception as e:
         print(f"An unexpected error occurred in the wrike handler: {e}")
     return {'status': 'success'}
+
+
