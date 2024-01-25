@@ -120,10 +120,11 @@ def respond():
         objects_translator = get_objects_translator()
         folders_translator = get_folders_translator()
 
-        if subscription_type == 'deal.propertyChange' and property_name == "dealstage" and change_source != 'INTEGRATION':
+        if subscription_type == 'deal.propertyChange' and property_name == "dealstage":
             deal_properties = get_deal_properties(deal_id_str=deal_id)
             update = False
             deal_status = str(deal_properties.get('dealstage'))
+            
             if deal_id in objects_translator.keys():
                 project_id = objects_translator[deal_id]
                 print('project_id assigned')

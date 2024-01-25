@@ -82,25 +82,28 @@ class Project:
         return status_id
 
     def update_status(self, target_status_str):
+        old_status = self.get_status_id
+        if old_status != target_status_str:
+            url = f"https://www.wrike.com/api/v4/folders/{self.project_id}"
+            headers = {
+                "Authorization": f"Bearer {self.access_token}",
+                "Content-Type": "application/json"}
 
-        url = f"https://www.wrike.com/api/v4/folders/{self.project_id}"
-        headers = {
-            "Authorization": f"Bearer {self.access_token}",
-            "Content-Type": "application/json"}
-
-        data = {
-            "project": {
-                "customStatusId": target_status_str
+            data = {
+                "project": {
+                    "customStatusId": target_status_str
+                }
             }
-        }
-        response = requests.put(url=url, headers=headers, data=json.dumps(data))
 
-        if response.status_code == 200:
-            print("Project status updated successfully!")
-        else:
-            print(f"Failed to update project status. Status code: {response.status_code}. Response: {response.text}")
+            
+            response = requests.put(url=url, headers=headers, data=json.dumps(data))
 
-        self.status_id = response.json().get('data', {})[0].get('project', {}).get('customStatusId')
+            if response.status_code == 200:
+                print("Project status updated successfully!")
+            else:
+                print(f"Failed to update project status. Status code: {response.status_code}. Response: {response.text}")
+
+            self.status_id = response.json().get('data', {})[0].get('project', {}).get('customStatusId')
 
     def change_name(self, new_name):
         url = f"https://www.wrike.com/api/v4/folders/{self.project_id}"
