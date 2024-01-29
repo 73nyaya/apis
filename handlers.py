@@ -1,4 +1,4 @@
-import requests
+import requests, time, json
 from flask import request
 from translator import get_status_translator, get_objects_translator, update_objects_translator, \
     delete_object_record, get_folders_translator, update_folders_translator
@@ -6,27 +6,27 @@ from hubspot import get_deal_properties, Deal
 from wrike import Project, get_project_id, get_project_name, get_project_info
 from gdrive import copy_folder_to, move_file
 from utilities import get_key_from_value
-import time
 from access_tokens import update_token, get_access_token
-import json
+from enum import Enum
+
+class connection_info(Enum):
+    client_id = 'b2bcc660-28f7-4995-b224-0e0686f6fa96'
+    client_secret = '94190740-1201-49a2-946b-9ca4e407704b'
+    redirect_uri = 'https://mincka-servers.com/auth'
+
 
 def home():
     return "Hello, this is the home page!"
 
 
-# install url https://app.hubspot.com/oauth/authorize?client_id=b2bcc660-28f7-4995-b224-0e0686f6fa96&redirect_uri=https:
-# //mincka-servers.com/auth&scope=crm.objects.deals.read
-# install url https://app.hubspot.com/oauth/authorize?client_id=b2bcc660-28f7-4995-b224-0e0686f6fa96&redirect_uri=https:
-# //mincka-servers.com/auth&scope=crm.objects.deals.read%20crm.objects.deals.write
-
-def handle_auth():
+def handle_auth() -> str:
     code = request.args.get('code')
     # Use this authorization code to get an access token and refresh token
     data = {
         'grant_type': 'authorization_code',
-        'client_id': 'b2bcc660-28f7-4995-b224-0e0686f6fa96',
-        'client_secret': '94190740-1201-49a2-946b-9ca4e407704b',
-        'redirect_uri': 'https://mincka-servers.com/auth',
+        'client_id': connection_info.client_id.value,
+        'client_secret': connection_info.client_secret.value,
+        'redirect_uri': connection_info.redirect_uri.value,
         'code': code
     }
 
@@ -37,15 +37,16 @@ def handle_auth():
     access_token = tokens.get('access_token')
     refresh_token = tokens.get('refresh_token')
 
-    update_token('hubspot', access_token)
-    update_token('hubspot_refresh', refresh_token)
-    print("Received access token: ", access_token)
-    print("Received refresh token: ", refresh_token)
+    if response.status_code == 200:
+        update_token('hubspot', access_token)
+        update_token('hubspot_refresh', refresh_token)
+        return f"Authorization successful! Response: {response.text}. Status code: {response.status_code}"
+    else:
+        return f"An error occurred. Response: {response.text}. Status code: {response.status_code}"
+    
 
-    return "Authorization successful!", 200
 
-
-def validate_hubspot_token(token):
+def validate_hubspot_token(token: str) -> None:
     # The API endpoint you're using for the test request
     access_token = token
     url = f'https://api.hubapi.com/oauth/v1/access-tokens/{access_token}'
@@ -56,9 +57,11 @@ def validate_hubspot_token(token):
 
     # Check the response to determine if the access token is valid
     if response.status_code == 200:
+
         # The access token is valid
         print("Access token is valid.")
     elif response.status_code == 404 or response.status_code == 401 or response.status_code == 400:
+
         # The access token is invalid or expired
         print("Access token is invalid or expired. Generating a new token")
 
@@ -69,6 +72,7 @@ def validate_hubspot_token(token):
             'Accept-Encoding': 'gzip, deflate, br',
             'Accept': '*/*'
         }
+
         # Replace with your actual refresh token and other required credentials
         refresh_token = get_access_token('hubspot_refresh')
 
@@ -76,23 +80,14 @@ def validate_hubspot_token(token):
         data = {
             'grant_type': 'refresh_token',
             'refresh_token': refresh_token,
-            'client_id': 'b2bcc660-28f7-4995-b224-0e0686f6fa96',
-            'client_secret': '94190740-1201-49a2-946b-9ca4e407704b'
+            'client_id': connection_info.client_id.value,
+            'client_secret': connection_info.client_id.value
         }
         response = requests.post(url=url, headers=headers, data=data)
-        request_url = response.request.url
-        request_headers = response.request.headers
-        request_body = response.request.body
-
-        print("Request URL:", request_url)
-        print("Request headers:", json.dumps(dict(request_headers), indent=4))
-        print("Request body:", request_body)
         if response.status_code == 200:
             tokens = response.json()
-
             access_token = tokens.get('access_token')
             refresh_token = tokens.get('refresh_token')
-
             update_token('hubspot', access_token)
             update_token('hubspot_refresh', refresh_token)
             print(f"Tokens updated. Response: {response.text}")
@@ -100,14 +95,13 @@ def validate_hubspot_token(token):
             print(f"Failed to obtain tokens. Status code: {response.status_code}. Response: {response.text}")
     else:
         # Handle other potential errors
-        print(f"An error occurred: {response.status_code}")
+        print(f"An error occurred: {response.status_code}. Response: {response.text}")
 
 
-def respond():
+def respond() -> dict:
     try:
         print(time.time())
         validate_hubspot_token(get_access_token('hubspot'))
-        # time.sleep((0.1+random.random())/20)
         # read the data from the POST method.
         data = request.json[0]
         print(data)
@@ -250,7 +244,7 @@ def respond():
 
 # Define your event handling functions here for the wrike listener
 
-def handle_folder_created(data):  # apply for projects
+def handle_folder_created(data) -> None:  # apply for projects
     project_id = data.get('folderId')
     project_info = get_project_info(project_id)
     project_name = project_info.get('title')
@@ -263,7 +257,7 @@ def handle_folder_created(data):  # apply for projects
         print('project status not found in hubspot. Aborting deal creation.')
 
 
-def handle_folder_deleted(data):
+def handle_folder_deleted(data: dict) -> None:
     project_id = data.get('folderId')
     deal_id = get_key_from_value(get_objects_translator(), project_id)
     if deal_id is None:
@@ -273,7 +267,7 @@ def handle_folder_deleted(data):
         deal.delete_deal()
         delete_object_record(deal_id)
 
-def handle_folder_title_changed(data):
+def handle_folder_title_changed(data: dict) -> None:
     project_name = data.get('title')
     project_id = data.get('folderId')
     deal_id = get_key_from_value(get_objects_translator(), project_id)
@@ -293,7 +287,7 @@ def handle_custom_field_changed(data):
     pass
 
 
-def handle_project_status_changed(data):
+def handle_project_status_changed(data: dict) -> None:
     project_status = data.get('customStatusId')
     project_id = data.get('taskId')
     deal_id = get_key_from_value(get_objects_translator(), project_id)
@@ -324,7 +318,7 @@ event_handlers = {
 }
 
 
-def respond_wrike():
+def respond_wrike() -> dict:
     try:
         validate_hubspot_token(get_access_token('hubspot'))
         print('Token validated.')

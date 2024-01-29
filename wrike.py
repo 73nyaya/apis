@@ -2,7 +2,7 @@ import requests
 import json
 from utilities import find_dict
 from access_tokens import get_access_token
-
+from typing import Dict, Optional
 
 # status_id = "IEAEINT7JMDWY7CM"
 # {
@@ -17,7 +17,7 @@ from access_tokens import get_access_token
 
 class Project:
 
-    def __init__(self, project_name=None, status_id=None, project_id=None, parent_id=None):
+    def __init__(self, project_name: Optional[str]=None, status_id: Optional[str]=None, project_id: Optional[str]=None, parent_id: Optional[str]=None):
         self.project_id = project_id
         self.access_token = get_access_token(platform_str='wrike')
         self.project_name = project_name
@@ -28,7 +28,7 @@ class Project:
         if not project_id:
             self.project_id = self.create_project()
 
-    def create_project(self):
+    def create_project(self) -> str:
         # POST request to Wrike API to create a new project
         # The request might look something like this:
         url = f"https://www.wrike.com/api/v4/folders/{self.parent_id}/folders/"
@@ -51,37 +51,24 @@ class Project:
         # Suppose the response is a JSON object and id is one of the fields
         return response.json().get('data', {})[0].get('id')
 
-    def get_status_id(self):
+    def get_status_id(self) -> str:
         # Here, you would usually make a GET request to Wrike API to fetch the current status.
         # The request might look something like this:
-        url = f"https://www.wrike.com/api/v4/folders/{self.project_id}"
-        headers = {
-            "Authorization": f"Bearer {self.access_token}",
-            "Content-Type": "application/json"}
-        response = requests.get(url, headers=headers)
+        if self.status_id:
+            return self.status_id
+        else:
+            url = f"https://www.wrike.com/api/v4/folders/{self.project_id}"
+            headers = {
+                "Authorization": f"Bearer {self.access_token}",
+                "Content-Type": "application/json"}
+            response = requests.get(url, headers=headers)
 
-        # Suppose the response is a JSON object and status is one of the fields
-        self.status_id = response.json().get('data', {}).get('project', {}).get('customStatusId')
-        print(self.status_id)
+            # Suppose the response is a JSON object and status is one of the fields
+            self.status_id = response.json().get('data', {}).get('project', {}).get('customStatusId')
+            print(self.status_id)
+            return self.status_id 
 
-        return self.status_id
-
-    def get_status_name(self):
-        # Here, you would usually make a GET request to Wrike API to fetch the current status.
-        # The request might look something like this:
-        url = f"https://www.wrike.com/api/v4/workflows"
-        headers = {
-            "Authorization": f"Bearer {self.access_token}",
-            "Content-Type": "application/json"}
-        response = requests.get(url, headers=headers)
-
-        # Suppose the response is a JSON object and status is one of the fields
-        status_id = response.json().get('data')[0].get("project").get("customStatusId")
-        print(status_id)
-
-        return status_id
-
-    def update_status(self, target_status_str):
+    def update_status(self, target_status_str: str) -> None:
         old_status = self.get_status_id
         if old_status != target_status_str:
             url = f"https://www.wrike.com/api/v4/folders/{self.project_id}"
@@ -105,7 +92,7 @@ class Project:
 
             self.status_id = response.json().get('data', {})[0].get('project', {}).get('customStatusId')
 
-    def change_name(self, new_name):
+    def change_name(self, new_name: str) -> None:
         url = f"https://www.wrike.com/api/v4/folders/{self.project_id}"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
@@ -122,7 +109,7 @@ class Project:
 
         self.project_name = response.json().get('data', {})[0].get('title', {})
 
-    def enable(self):
+    def enable(self) -> None:
         try:
             self.change_name("J" + self.project_name[1:])
             self.move_project('IEAEINT7I4UAB54L')
@@ -133,7 +120,7 @@ class Project:
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
 
-    def delete(self):
+    def delete(self) -> None:
         url = f"https://www.wrike.com/api/v4/folders/{self.project_id}"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
@@ -144,7 +131,7 @@ class Project:
         else:
             print(f"Failed to delete project. Status code: {response.status_code}. Response: {response.text}")
 
-    def move_project(self, destination_folder_id):
+    def move_project(self, destination_folder_id: str) -> None:
         url = f"https://www.wrike.com/api/v4/folders/{self.project_id}?"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
@@ -164,7 +151,7 @@ class Project:
         else:
             print(f"Failed to move project. Status code: {response.status_code}. Response: {response.text}")
 
-    def write_comment(self, message_str):
+    def write_comment(self, message_str: str) -> None:
         url = f"https://www.wrike.com/api/v4/folders/{self.project_id}?"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
@@ -180,7 +167,7 @@ class Project:
         else:
             print(f"Failed to comment. Status code: {response.status_code}. Response: {response.text}")
 
-    def create_adm_folder(self):
+    def create_adm_folder(self) -> None:
         # POST request to Wrike API to create a new project
         # The request might look something like this:
         url = f"https://www.wrike.com/api/v4/folders/{self.project_id}/folders/"
@@ -200,7 +187,7 @@ class Project:
     
 
 
-def get_project_name(project_id_str):
+def get_project_name(project_id_str: str) -> str:
     access_token = get_access_token('wrike')
     # Here, you would usually make a GET request to Wrike API to fetch the folder name.
     # The request might look something like this:
@@ -215,7 +202,7 @@ def get_project_name(project_id_str):
     return folder_name
 
 
-def get_project_info(project_id_str):
+def get_project_info(project_id_str: str) -> dict: 
     access_token = get_access_token('wrike')
     # Here, you would usually make a GET request to Wrike API to fetch the folder name.
     # The request might look something like this:
@@ -229,7 +216,7 @@ def get_project_info(project_id_str):
     return response.json().get('data', {})[0]
 
 
-def get_project_id(project_name_str):
+def get_project_id(project_name_str: str) -> str:
     access_token = get_access_token('wrike')
     url = 'https://www.wrike.com/api/v4/folders?project=true'
     headers = {
