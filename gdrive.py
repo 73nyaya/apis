@@ -9,7 +9,7 @@ SCOPES = ['https://www.googleapis.com/auth/drive']
 service = Create_Service(CLIENT_SECRET_FILE, API_NAME, API_VERSION, SCOPES)
 
 
-def copy_folder_to(source_folder_id, source_drive_id, destination_folder_id, destination_drive_id, project_name):
+def copy_folder_to(source_folder_id: str, source_drive_id: str, destination_folder_id: str, destination_drive_id: str, project_name: str) -> str:
     # Call the Drive v3 API
     source_folder_id = str(source_folder_id)
     source_folder_metadata = service.files().get(fileId=source_folder_id, supportsAllDrives=True).execute()
@@ -79,7 +79,7 @@ def copy_folder_to(source_folder_id, source_drive_id, destination_folder_id, des
 # '0AIYZe1bK2f__Uk9PVA', 'clone')
 
 
-def move_file(file_id, to_id):
+def move_file(file_id: str, to_id: str) -> None:
     try:
         file = service.files().get(fileId=file_id,
                                    supportsAllDrives=True,
