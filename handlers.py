@@ -115,7 +115,7 @@ def respond() -> dict:
         folders_translator = get_folders_translator()
 
         if subscription_type == 'deal.propertyChange' and property_name == "dealstage":
-            deal_properties = get_deal_properties(deal_id_str=deal_id)
+            deal_properties = get_deal_properties(deal_id=deal_id)
             update = False
             deal_status = str(deal_properties.get('dealstage'))
             
@@ -177,7 +177,7 @@ def respond() -> dict:
 
         elif subscription_type == 'deal.creation':
             if deal_id not in objects_translator.keys():
-                deal_properties = get_deal_properties(deal_id_str=deal_id)
+                deal_properties = get_deal_properties(deal_id=deal_id)
                 deal_name = deal_properties.get('dealname')
                 deal_status = deal_properties.get('dealstage')
                 project_status = status_translator[deal_status]
@@ -222,7 +222,7 @@ def respond() -> dict:
                 except Exception as e:
                     print(f"An unexpected error occurred: {e}")
             else:
-                deal_properties = get_deal_properties(deal_id_str=deal_id)
+                deal_properties = get_deal_properties(deal_id=deal_id)
                 deal_name = deal_properties.get('dealname')
                 deal_status = deal_properties.get('dealstage')
                 project_status = status_translator[deal_status]
