@@ -81,7 +81,7 @@ def validate_hubspot_token(token: str) -> None:
             'grant_type': 'refresh_token',
             'refresh_token': refresh_token,
             'client_id': connection_info.client_id.value,
-            'client_secret': connection_info.client_id.value
+            'client_secret': connection_info.client_secret.value
         }
         response = requests.post(url=url, headers=headers, data=data)
         if response.status_code == 200:
