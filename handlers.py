@@ -1,13 +1,16 @@
 import requests, time, json
 from flask import request
 from translator import get_status_translator, get_objects_translator, update_objects_translator, \
-    delete_object_record, get_folders_translator, update_folders_translator
+    delete_object_record, get_folders_translator, update_folders_translator, get_translator,  \
+        update_translator, delete_translator_record, Translators
 from hubspot import get_deal_properties, Deal
 from wrike import Project, get_project_id, get_project_name, get_project_info
-from gdrive import copy_folder_to, move_file
-from utilities import get_key_from_value
+from gdrive import copy_folder_to, move_file, create_folder
+from utilities import get_key_from_value, find_dict
 from access_tokens import update_token, get_access_token
 from enum import Enum
+from typing import field
+
 
 class connection_info(Enum):
     client_id = 'b2bcc660-28f7-4995-b224-0e0686f6fa96'
@@ -304,6 +307,53 @@ def handle_project_status_changed(data: dict) -> None:
             print('deal status has not changed')
     else:
         print('deal id not found.')
+
+
+
+def create_project_folder(project_id: str) -> str | None:
+    project = Project(project_id=project_id)
+    project_information = get_project_info(project_id_str=project_id)
+    custom_fields = project_information.get('customFields')
+    customer = find_dict(nested_dict=custom_fields, target_key='id', target_value='IEAEINT7JUACLO7Y')['value']
+    folder_structure = find_dict(nested_dict=custom_fields, target_key='id', target_value='IEAEINT7JUAFPH5S')['value']
+    folder_types_translator = get_translator(translator_case=Translators.folder_types.value) 
+    project_folders_translator = get_translator(translator_case=Translators.project_folders.value)
+    if project_id in project_folders_translator.keys():
+        project.write_comment(f'Project folder already created. Please go to: https://drive.google.com/drive/u/0/folders/{project_folders_translator[project_id]}')
+    else:
+        if folder_structure in folder_types_translator.keys():
+            source_folder_id = folder_types_translator[folder_structure]
+        else:
+            parent_id = '1mkjhTBX5BYTmMZZn54f-71bwFg_yJmVk' # Engineering templates
+            source_folder_id = create_folder(parent_id=parent_id, folder_name=folder_structure)
+            update_translator(translator_case=Translators.folder_types.value, key=folder_structure, value=source_folder_id)
+            project.write_comment(f'The folder structure has not been defined for the project type {folder_structure}. Please create it in the Engineering Templates/Project directories organisation folder in order to replicate for future cases.')
+        destination_folder_id = validate_customer_folder(customer=customer)
+        if destination_folder_id and source_folder_id:
+            folder_id = copy_folder_to(source_folder_id=source_folder_id,
+                                    source_drive_id='0AJLZXfZRbFjuUk9PVA', # Business operations shared drive 
+                                    destination_folder_id= destination_folder_id, #projects 2024 drive folder
+                                    destination_drive_id='0AO68U2ZGqB9JUk9PVA', # Engineering shared drive
+                                    project_name=project_information.get('title'))
+            update_translator(translator_case=Translators.project_folders.value, key=project_id, value = project_id)
+            return folder_id
+        else: 
+            print('An unexpected error occured when creating the project folder')
+            project.write_comment('An unexpected error occurred when creating the projec folder in Google Drive, please verify and create it manually.')
+
+
+
+def validate_customer_folder(customer:str) -> str:
+    '''validates the existence of the customer folder in google drive'''
+    parent_id='1ha3TKy3pRTEVv0tEAx6moS0ixir8Ydfx' #projects 2024 drive folder
+    customer_folders_translator = get_translator(translator_case=Translators.customer_folders.value)
+    if customer in customer_folders_translator.keys():
+        folder_id = customer_folders_translator[customer]
+        return folder_id
+    else:
+        folder_id = create_folder(parent_id=parent_id, folder_name=customer)
+        
+        update_translator(translator_case=Translators.customer_folders.value, key=customer, value=folder_id)
 
 
 # This dictionary maps event types to their corresponding functions

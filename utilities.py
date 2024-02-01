@@ -1,4 +1,4 @@
-def find_dict(nested_dict, target_key, target_value):
+def find_dict(nested_dict: dict, target_key: str, target_value: str) -> dict:
     found = False
     for key, val in nested_dict.items():
         if isinstance(val, dict):
@@ -16,7 +16,7 @@ def find_dict(nested_dict, target_key, target_value):
     else:
         print('not found')
 
-def get_key_from_value(dictionary, value):
+def get_key_from_value(dictionary: dict, value: str) -> str:
     for key, val in dictionary.items():
         if val == value:
             return key

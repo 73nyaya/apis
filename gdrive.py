@@ -10,6 +10,7 @@ service = Create_Service(CLIENT_SECRET_FILE, API_NAME, API_VERSION, SCOPES)
 
 
 def copy_folder_to(source_folder_id: str, source_drive_id: str, destination_folder_id: str, destination_drive_id: str, project_name: str) -> str:
+    '''returns the id of the new copy'''
     # Call the Drive v3 API
     source_folder_id = str(source_folder_id)
     source_folder_metadata = service.files().get(fileId=source_folder_id, supportsAllDrives=True).execute()
@@ -98,3 +99,19 @@ def move_file(file_id: str, to_id: str) -> None:
     except Exception as e:
         print('an unexpected error occurred', e)
 
+
+
+def create_folder(parent_id: str, folder_name: str) -> str | None:
+    ''' returns an id'''
+    destination_folder_metadata = {
+        'name': folder_name,
+        'mimeType': 'application/vnd.google-apps.folder',
+        'parents': [parent_id]
+    }
+    try:
+        destination_folder = service.files().create(body=destination_folder_metadata,
+                                                        fields='id',
+                                                        supportsAllDrives=True).execute()
+        return str(destination_folder['id'])
+    except Exception as e:
+        print(f"An unexpected error occurred creating the folder: {e}")
