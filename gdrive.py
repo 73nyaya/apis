@@ -1,5 +1,5 @@
 from Google import Create_Service
-
+from typing import Optional
 
 CLIENT_SECRET_FILE = 'Components/Credentials/credentials.json'
 API_NAME = 'drive'
@@ -101,7 +101,7 @@ def move_file(file_id: str, to_id: str) -> None:
 
 
 
-def create_folder(parent_id: str, folder_name: str) -> str | None:
+def create_folder(parent_id: str, folder_name: str) -> Optional[str]:
     ''' returns an id'''
     destination_folder_metadata = {
         'name': folder_name,
