@@ -152,7 +152,7 @@ class Project:
             print(f"Failed to move project. Status code: {response.status_code}. Response: {response.text}")
 
     def write_comment(self, message_str: str) -> None:
-        url = f"https://www.wrike.com/api/v4/folders/{self.project_id}?"
+        url = f"https://www.wrike.com/api/v4/folders/{self.project_id}/comments"
         headers = {
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json"}
@@ -160,7 +160,7 @@ class Project:
         data = {
             "text": message_str
         }
-        response = requests.put(url=url, headers=headers, data=json.dumps(data))
+        response = requests.post(url=url, headers=headers, data=json.dumps(data))
 
         if response.status_code == 200:
             print("comment successfully!")

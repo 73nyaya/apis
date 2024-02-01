@@ -293,6 +293,8 @@ def handle_custom_field_changed(data):
 def handle_project_status_changed(data: dict) -> None:
     project_status = data.get('customStatusId')
     project_id = data.get('taskId')
+    if project_status == 'IEAEINT7JMCLXBAC':
+        create_project_folder(project_id=project_id)
     deal_id = get_key_from_value(get_objects_translator(), project_id)
     if deal_id:
         deal = Deal(deal_id=deal_id)
