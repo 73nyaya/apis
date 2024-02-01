@@ -9,7 +9,7 @@ from gdrive import copy_folder_to, move_file, create_folder
 from utilities import get_key_from_value, find_dict
 from access_tokens import update_token, get_access_token
 from enum import Enum
-from typing import field
+from typing import Optional
 
 
 class connection_info(Enum):
@@ -310,7 +310,7 @@ def handle_project_status_changed(data: dict) -> None:
 
 
 
-def create_project_folder(project_id: str) -> str | None:
+def create_project_folder(project_id: str) -> Optional[str]:
     project = Project(project_id=project_id)
     project_information = get_project_info(project_id_str=project_id)
     custom_fields = project_information.get('customFields')
