@@ -24,8 +24,9 @@ def get_key_from_value(dictionary: dict, value: str) -> str:
 
 def find_dict_in_list(my_list: tuple[dict, ...], target_key : str, target_val: str):
     found = False
-    for dict in my_list:
-        if isinstance(find_dict(dict, target_key=target_key, target_value=target_val), dict):
+    for dicts in my_list:
+        key_pair = find_dict(dict, target_key=target_key, target_value=target_val)
+        if isinstance(key_pair, dict):
             found = True
             return find_dict(dict, target_key=target_key, target_value=target_val)
             break

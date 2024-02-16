@@ -320,8 +320,12 @@ def create_project_folder(project_id: str) -> Optional[str]:
     project = Project(project_id=project_id)
     project_information = get_project_info(project_id_str=project_id)
     custom_fields = project_information.get('customFields')
-    customer = find_dict_in_list(nested_dict=custom_fields, target_key='id', target_value='IEAEINT7JUACLO7Y')['value']
-    folder_structure = find_dict(nested_dict=custom_fields, target_key='id', target_value='IEAEINT7JUAFPH5S')['value']
+    customer = find_dict_in_list(my_list=custom_fields, target_key='id', target_value='IEAEINT7JUACLO7Y')['value']
+    if customer =="":
+        project.write_comment('Customer was not been specified to create the google drive project folder. Please create it manually.')
+    folder_structure = find_dict_in_list(my_list=custom_fields, target_key='id', target_value='IEAEINT7JUAFPH5S')['value']
+    if folder_structure=="":
+        project.write_comment('Folder structure custom field was not been specified to create the google drive project folder. Please create it manually.')
     folder_types_translator = get_translator(translator_case=Translators.folder_types.value) 
     project_folders_translator = get_translator(translator_case=Translators.project_folders.value)
     if project_id in project_folders_translator.keys():
