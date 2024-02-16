@@ -6,7 +6,7 @@ from translator import get_status_translator, get_objects_translator, update_obj
 from hubspot import get_deal_properties, Deal
 from wrike import Project, get_project_id, get_project_name, get_project_info
 from gdrive import copy_folder_to, move_file, create_folder
-from utilities import get_key_from_value, find_dict
+from utilities import get_key_from_value, find_dict, find_dict_in_list
 from access_tokens import update_token, get_access_token
 from enum import Enum
 from typing import Optional
@@ -320,7 +320,7 @@ def create_project_folder(project_id: str) -> Optional[str]:
     project = Project(project_id=project_id)
     project_information = get_project_info(project_id_str=project_id)
     custom_fields = project_information.get('customFields')
-    customer = find_dict(nested_dict=custom_fields, target_key='id', target_value='IEAEINT7JUACLO7Y')['value']
+    customer = find_dict_in_list(nested_dict=custom_fields, target_key='id', target_value='IEAEINT7JUACLO7Y')['value']
     folder_structure = find_dict(nested_dict=custom_fields, target_key='id', target_value='IEAEINT7JUAFPH5S')['value']
     folder_types_translator = get_translator(translator_case=Translators.folder_types.value) 
     project_folders_translator = get_translator(translator_case=Translators.project_folders.value)
