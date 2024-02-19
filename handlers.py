@@ -328,10 +328,14 @@ def create_project_folder(project_id: str) -> Optional[str]:
     customer = find_dict_in_list(my_list=custom_fields, target_key='id', target_val='IEAEINT7JUACLO7Y')['value']
     if customer =="":
         project.write_comment('Customer was not been specified to create the google drive project folder. Please create it manually.')
+    else: 
+        print(f'Customer: {customer}')
     print('searching folder structure:')
     folder_structure = find_dict_in_list(my_list=custom_fields, target_key='id', target_val='IEAEINT7JUAFPH5S')['value']
     if folder_structure=="":
         project.write_comment('Folder structure custom field was not been specified to create the google drive project folder. Please create it manually.')
+    else: 
+        print(f'Folder structure: {folder_structure}')
     folder_types_translator = get_translator(translator_case=Translators.folder_types.value) 
     project_folders_translator = get_translator(translator_case=Translators.project_folders.value)
     if project_id in project_folders_translator.keys():
