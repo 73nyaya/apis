@@ -345,10 +345,10 @@ def create_project_folder(project_id: str) -> Optional[str]:
             source_folder_id = folder_types_translator[folder_structure]
         else:
             print(f'Creating new template structure for {folder_structure} project types')
-            parent_id = '1_96_4Z7nCQXslAjV2E06psewBg1gKWKo' # Engineering templates
+            parent_id = '1_96_4Z7nCQXslAjV2E06psewBg1gKWKo' # Project directories organisation / project types
             source_folder_id = create_folder(parent_id=parent_id, folder_name=folder_structure)
             update_translator(translator_case=Translators.folder_types.value, key=folder_structure, value=source_folder_id)
-            project.write_comment(f'The folder structure has not been defined for the project type {folder_structure}. Please create it in the Engineering Templates/Project directories organisation folder in order to replicate for future cases.')
+            project.write_comment(f'The folder structure has not been defined for the project type: {folder_structure}. Please create it in the Engineering Templates/Project directories organisation/Project types folder in order to replicate for future cases.')
         destination_folder_id = validate_customer_folder(customer=customer)
         if destination_folder_id and source_folder_id:
             folder_id = copy_folder_to(source_folder_id=source_folder_id,
@@ -369,12 +369,14 @@ def validate_customer_folder(customer:str) -> str:
     parent_id='1ha3TKy3pRTEVv0tEAx6moS0ixir8Ydfx' #projects 2024 drive folder
     customer_folders_translator = get_translator(translator_case=Translators.customer_folders.value)
     if customer in customer_folders_translator.keys():
+        print('customer folder already exist.')
         folder_id = customer_folders_translator[customer]
         return folder_id
     else:
+        print('customer folder does not exist, creating a new one.')
         folder_id = create_folder(parent_id=parent_id, folder_name=customer)
-        
         update_translator(translator_case=Translators.customer_folders.value, key=customer, value=folder_id)
+        return folder_id
 
 
 # This dictionary maps event types to their corresponding functions
