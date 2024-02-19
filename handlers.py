@@ -345,7 +345,7 @@ def create_project_folder(project_id: str) -> Optional[str]:
             source_folder_id = folder_types_translator[folder_structure]
         else:
             print(f'Creating new template structure for {folder_structure} project types')
-            parent_id = '1mkjhTBX5BYTmMZZn54f-71bwFg_yJmVk' # Engineering templates
+            parent_id = '1_96_4Z7nCQXslAjV2E06psewBg1gKWKo' # Engineering templates
             source_folder_id = create_folder(parent_id=parent_id, folder_name=folder_structure)
             update_translator(translator_case=Translators.folder_types.value, key=folder_structure, value=source_folder_id)
             project.write_comment(f'The folder structure has not been defined for the project type {folder_structure}. Please create it in the Engineering Templates/Project directories organisation folder in order to replicate for future cases.')
