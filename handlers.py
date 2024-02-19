@@ -356,7 +356,8 @@ def create_project_folder(project_id: str) -> Optional[str]:
                                     destination_folder_id= destination_folder_id, #projects 2024 drive folder
                                     destination_drive_id='0AO68U2ZGqB9JUk9PVA', # Engineering shared drive
                                     project_name=project_information.get('title'))
-            update_translator(translator_case=Translators.project_folders.value, key=project_id, value = project_id)
+            update_translator(translator_case=Translators.project_folders.value, key=project_id, value = folder_id)
+            project.write_comment(f'Project folder has been created. Please go to: https://drive.google.com/drive/u/0/folders/{folder_id}')
             return folder_id
         else: 
             print('An unexpected error occured when creating the project folder')
