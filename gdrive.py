@@ -112,6 +112,8 @@ def create_folder(parent_id: str, folder_name: str) -> Optional[str]:
         destination_folder = service.files().create(body=destination_folder_metadata,
                                                         fields='id',
                                                         supportsAllDrives=True).execute()
-        return str(destination_folder['id'])
+        id = str(destination_folder.get('id'))
+        print(f'Folder created, id: {id}')
+        return id
     except Exception as e:
         print(f"An unexpected error occurred creating the folder: {e}")
