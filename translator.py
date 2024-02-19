@@ -45,7 +45,7 @@ def get_translator(translator_case: Translators) -> dict:
 
 def update_translator(translator_case: str, key: str, value: str) -> None:
     path_translator = Path(Path.cwd() / 'Components' / 'Translators' / (str(translator_case) + '.json'))
-    path_translator.mkdir(parents=True, exist_ok=True)
+    path_translator.parent.mkdir(parents=True, exist_ok=True)
     # Load existing data
     try:
         with open(path_translator, 'r') as f:
