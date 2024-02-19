@@ -249,15 +249,18 @@ def respond() -> dict:
 
 def handle_folder_created(data) -> None:  # apply for projects
     project_id = data.get('folderId')
-    project_info = get_project_info(project_id)
-    project_name = project_info.get('title')
-    project_status = project_info.get('project').get('customStatusId')
-    deal_status = get_key_from_value(get_status_translator(), project_status)
-    if deal_status:
-        new_deal = Deal(deal_name=project_name, deal_stage=deal_status)
-        update_objects_translator(hubspot_id_str=new_deal.deal_id, wrike_id_str=project_id)
-    else:
-        print('project status not found in hubspot. Aborting deal creation.')
+    if project_id not in get_translator(translator_case=Translators.objects.value).values():
+        project_info = get_project_info(project_id)
+        project_name = project_info.get('title')
+        project_status = project_info.get('project').get('customStatusId')
+        deal_status = get_key_from_value(get_status_translator(), project_status)
+        if deal_status:
+            new_deal = Deal(deal_name=project_name, deal_stage=deal_status)
+            update_objects_translator(hubspot_id_str=new_deal.deal_id, wrike_id_str=project_id)
+        else:
+            print('project status not found in hubspot. Aborting deal creation.')
+    else: 
+        print('Deal already exist.')
 
 
 def handle_folder_deleted(data: dict) -> None:
