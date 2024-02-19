@@ -26,8 +26,8 @@ path_folders_translator.parent.mkdir(parents=True, exist_ok=True)
 
 
 def get_translator(translator_case: Translators) -> dict:
-    path_translator = Path(Path.cwd() / 'Components' / 'Translators' / (translator_case+'.json'))
-    path_translator.mkdir(parents=True, exist_ok=True)
+    path_translator = Path(Path.cwd() / 'Components' / 'Translators' / (str(translator_case) + '.json'))
+    path_translator.parent.mkdir(parents=True, exist_ok=True)
     try:
         with open(path_translator, 'r') as f:
             translator = json.load(f)
@@ -44,7 +44,7 @@ def get_translator(translator_case: Translators) -> dict:
         print('Exception', e)    
 
 def update_translator(translator_case: str, key: str, value: str) -> None:
-    path_translator = Path(Path.cwd() / 'Components' / 'Translators' / (translator_case+'.json'))
+    path_translator = Path(Path.cwd() / 'Components' / 'Translators' / (str(translator_case) + '.json'))
     path_translator.mkdir(parents=True, exist_ok=True)
     # Load existing data
     try:
@@ -63,7 +63,7 @@ def update_translator(translator_case: str, key: str, value: str) -> None:
         json.dump(data, f, indent=4)
 
 def delete_translator_record(translator_case: str, key: str):
-    path_translator = Path(Path.cwd() / 'Components' / 'Translators' / (translator_case+'.json'))
+    path_translator = Path(Path.cwd() / 'Components' / 'Translators' / (str(translator_case) + '.json'))
     # Load existing data
     try:
         with open(path_translator, 'r') as f:
