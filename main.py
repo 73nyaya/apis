@@ -38,7 +38,7 @@ def handle_auth_route():
 @app.route('/73aa29fd-699d-9ee4-3113-f42491444eac/<asset_id>')
 def redirect_to_custom_url(asset_id):
     # Fetch the custom URL for the given asset id from the loaded Excel data
-    custom_url = redirect_asset
+    custom_url = redirect_asset(asset_id=asset_id)
     
     if custom_url:
         # Redirect to the custom URL if found
