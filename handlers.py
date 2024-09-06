@@ -1,4 +1,5 @@
 import requests, time, json
+import pandas as pd
 from flask import request
 from translator import get_status_translator, get_objects_translator, update_objects_translator, \
     delete_object_record, get_folders_translator, update_folders_translator, get_translator,  \
@@ -422,4 +423,15 @@ def respond_wrike() -> dict:
         print(f"An unexpected error occurred in the wrike handler: {e}")
     return {'status': 'success'}
 
+
+def redirect_asset(asset_id) -> str:
+    try:
+        df = pd.read_excel('./Components/Data/redirects.xlsx')  # Assuming your file is named 'assets.xlsx'
+        # Convert the DataFrame to a dictionary with asset_id as the key and custom_url as the value
+        asset_redirects = dict(zip(df['asset_id'], df['drive_url']))
+        new_url = asset_redirects.get(asset_id)
+        return asset_redirects
+    except Exception as e:
+        print("an error ocurred redirecting:", e)
+        return None
 

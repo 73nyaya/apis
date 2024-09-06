@@ -1,10 +1,10 @@
-from flask import Flask, request
+from flask import Flask, request, redirect
 import requests
 import json
 from wrike import Project
 from translator import get_objects_translator, get_status_translator
 from access_tokens import get_access_token
-from handlers import home, respond, respond_wrike, handle_auth
+from handlers import home, respond, respond_wrike, handle_auth, redirect_asset
 import threading
 
 app = Flask(__name__)
@@ -35,6 +35,17 @@ def respond_wrike_route():
 def handle_auth_route():
     return handle_auth()
 
-
+@app.route('/73aa29fd-699d-9ee4-3113-f42491444eac/<asset_id>')
+def redirect_to_custom_url(asset_id):
+    # Fetch the custom URL for the given asset id from the loaded Excel data
+    custom_url = redirect_asset
+    
+    if custom_url:
+        # Redirect to the custom URL if found
+        return redirect(custom_url)
+    else:
+        # If no custom URL found, redirect to a default page or YouTube homepage
+        return redirect('/')
+    
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=False)
