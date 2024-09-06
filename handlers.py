@@ -430,7 +430,7 @@ def redirect_asset(asset_id) -> str:
         # Convert the DataFrame to a dictionary with asset_id as the key and custom_url as the value
         asset_redirects = dict(zip(df['asset_id'], df['drive_url']))
         new_url = asset_redirects.get(asset_id)
-        return asset_redirects
+        return new_url
     except Exception as e:
         print("an error ocurred redirecting:", e)
         return None
