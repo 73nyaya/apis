@@ -11,7 +11,7 @@ class Translators(Enum):
     project_folders: str = 'projectFoldersTranslator'# relation between project ids and project folders in the engineering space/customer folder
     folder_types: str = 'folderTypesTranslator' # relation between project types (custom field in wrike) and folder templates id from drive
     status: str = 'statusTranslator' # relation between status ids of deal stages and status ids in wrike
-
+    procurement: str = 'procurementFolderTranslator' # relation between project ids and procurement activities folder 
 # Objects translator
 
 # Define the path from index
