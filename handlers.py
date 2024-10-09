@@ -383,10 +383,10 @@ def validate_customer_folder(customer:str) -> str:
 # dictitionary keys: wrike webhook ids associated to an specific folder when the listener is added: values: google drive folders where changes must occur.
 
 parent_folders = {'IEAEINT7JAABYVYK': '1V9dLdXCSdmMXPnJZG0VO3D2whUD1I7MF', # Purchases
-           '': '15KOZnreBKMtqeXy5zHZgo2cQUR-ktBmZ', # Issuance
-           '': '1OHWpU9-FRcSV5-AxJXKwk3ASuimZboqi', # Maintenance
+           'IEAEINT7JAABY5ZL': '15KOZnreBKMtqeXy5zHZgo2cQUR-ktBmZ', # Issuance
+           'IEAEINT7JAABY5ZK': '1OHWpU9-FRcSV5-AxJXKwk3ASuimZboqi', # Maintenance
            'IEAEINT7JAABY5ZN': '1DSM8IlC0PDEYe6Uji13LNIRETFg18Hv8', # Disposal
-           '': '1qfGPF1UdvBPM2GEiy2qYaGXqzLqUC1t2' # Travel
+           'IEAEINT7JAABY5ZM': '1qfGPF1UdvBPM2GEiy2qYaGXqzLqUC1t2' # Travel
            } 
 # This dictionary maps event types to their corresponding functions
 
