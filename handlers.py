@@ -382,7 +382,7 @@ def validate_customer_folder(customer:str) -> str:
 
 # dictitionary keys: wrike webhook ids associated to an specific folder when the listener is added: values: google drive folders where changes must occur.
 
-parent_folders = {'IEAEINT7JAABYVYK': '1V9dLdXCSdmMXPnJZG0VO3D2whUD1I7MF', # Purchases
+parent_folders = {'IEAEINT7JAABY5ZJ': '1V9dLdXCSdmMXPnJZG0VO3D2whUD1I7MF', # Purchases
            'IEAEINT7JAABY5ZL': '15KOZnreBKMtqeXy5zHZgo2cQUR-ktBmZ', # Issuance
            'IEAEINT7JAABY5ZK': '1OHWpU9-FRcSV5-AxJXKwk3ASuimZboqi', # Maintenance
            'IEAEINT7JAABY5ZN': '1DSM8IlC0PDEYe6Uji13LNIRETFg18Hv8', # Disposal
@@ -405,7 +405,7 @@ def handle_folder_created_pr(data: dict) -> Optional[str]:
     project = Project(project_id=project_id)
     project_information = get_project_info(project_id_str=project_id)
     folder_title = project_information.get('title')
-
+    print('creating folder')
     folder_id = create_folder(parent_id=parent_folders[webhook_folder_id], folder_name=folder_title) #asset acquisition folder for this FY25
     if folder_id:
         update_translator(translator_case=Translators.procurement.value, key=project_id, value=folder_id)
