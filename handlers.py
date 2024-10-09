@@ -418,7 +418,7 @@ def handle_folder_deleted_pr(data: dict) -> Optional[str]:
     if folder_id is None:
         return 'Project not in translator'
     else:
-        delete_translator_record(translator_case=Translators.procurement.value, project_id=project_id )
+        delete_translator_record(translator_case=Translators.procurement.value, key=project_id )
         return delete_folder(folder_id=folder_id)
 
 def handle_folder_title_changed_pr(data:dict) -> Optional[str]:
