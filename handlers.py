@@ -6,7 +6,7 @@ from translator import get_status_translator, get_objects_translator, update_obj
         update_translator, delete_translator_record, Translators
 from hubspot import get_deal_properties, Deal
 from wrike import Project, get_project_id, get_project_name, get_project_info
-from gdrive import copy_folder_to, move_file, create_folder
+from gdrive import copy_folder_to, move_file, create_folder, delete_folder, rename_folder
 from utilities import get_key_from_value, find_dict, find_dict_in_list
 from access_tokens import update_token, get_access_token
 from enum import Enum
@@ -368,7 +368,7 @@ def create_project_folder(project_id: str) -> Optional[str]:
 
 def validate_customer_folder(customer:str) -> str:
     '''validates the existence of the customer folder in google drive'''
-    parent_id='1ha3TKy3pRTEVv0tEAx6moS0ixir8Ydfx' #projects 2024 drive folder
+    parent_id='1u3MNyFDwByV__tNw4f3MaTZlyQA-9PPP' #projects 2024 drive folder
     customer_folders_translator = get_translator(translator_case=Translators.customer_folders.value)
     if customer in customer_folders_translator.keys():
         print('customer folder already exist.')
@@ -380,10 +380,17 @@ def validate_customer_folder(customer:str) -> str:
         update_translator(translator_case=Translators.customer_folders.value, key=customer, value=folder_id)
         return folder_id
 
+# dictitionary keys: wrike webhook ids associated to an specific folder when the listener is added: values: google drive folders where changes must occur.
 
+parent_folders = {'IEAEINT7JAABYVYK': '1V9dLdXCSdmMXPnJZG0VO3D2whUD1I7MF', # Purchases
+           '': '15KOZnreBKMtqeXy5zHZgo2cQUR-ktBmZ', # Issuance
+           '': '1OHWpU9-FRcSV5-AxJXKwk3ASuimZboqi', # Maintenance
+           'IEAEINT7JAABY5ZN': '1DSM8IlC0PDEYe6Uji13LNIRETFg18Hv8', # Disposal
+           '': '1qfGPF1UdvBPM2GEiy2qYaGXqzLqUC1t2' # Travel
+           } 
 # This dictionary maps event types to their corresponding functions
 
-event_handlers = {
+event_handlers_ms = { #marketing and sales
     'FolderCreated': handle_folder_created,
     'FolderDeleted': handle_folder_deleted,
     'FolderTitleChanged': handle_folder_title_changed,
@@ -392,7 +399,68 @@ event_handlers = {
     'ProjectStatusChanged': handle_project_status_changed,
 }
 
+def handle_folder_created_pr(data: dict) -> Optional[str]:
+    project_id = data.get('folderId')
+    webhook_folder_id = data.get('weebhookId')
+    project = Project(project_id=project_id)
+    project_information = get_project_info(project_id_str=project_id)
+    folder_title = project_information.get('title')
 
+    folder_id = create_folder(parent_id=parent_folders[webhook_folder_id], folder_name=folder_title) #asset acquisition folder for this FY25
+    if folder_id:
+        update_translator(translator_case=Translators.procurement.value, key=project_id, value=folder_id)
+    return folder_id
+
+def handle_folder_deleted_pr(data: dict) -> Optional[str]:
+    project_id = data.get('folderId')
+    procurement_translator = get_translator(translator_case=Translators.procurement.value)
+    folder_id = procurement_translator[project_id]
+    if folder_id is None:
+        return 'Project not in translator'
+    else:
+        delete_translator_record(translator_case=Translators.procurement.value, project_id=project_id )
+        return delete_folder(folder_id=folder_id)
+
+def handle_folder_title_changed_pr(data:dict) -> Optional[str]:
+    project_id = data.get('folderId')
+    folder_id=get_translator(translator_case=Translators.procurement.value)[project_id]
+    project_name = get_project_name(project_id_str=project_id)
+    return rename_folder(folder_id=folder_id, new_name=project_name)
+
+event_handlers_pa = { #procurement and asset management Purchase Request
+    'FolderCreated': handle_folder_created_pr,
+    'FolderDeleted': handle_folder_deleted_pr,
+    'FolderTitleChanged': handle_folder_title_changed_pr,
+}
+
+def respond_wrike_marketing_sales(data:dict) -> None:
+    # Parse the JSON data from the request
+    event_type = data.get('eventType')
+
+    # Find the appropriate handler for the event type
+    handler = event_handlers_ms.get(event_type)
+
+    # If a handler exists, call it with the event data
+    if handler:
+        handler(data)
+        return 'Event handled', 200
+    else:
+        return 'No handler for event type', 400
+
+def respond_wrike_procurement(data:dict) -> None:
+    # Parse the JSON data from the request
+    event_type = data.get('eventType')
+
+    # Find the appropriate handler for the event type
+    handler = event_handlers_pa.get(event_type)
+
+    # If a handler exists, call it with the event data
+    if handler:
+        handler(data)
+        return 'Event handled', 200
+    else:
+        return 'No handler for event type', 400
+    
 def respond_wrike() -> dict:
     try:
         validate_hubspot_token(get_access_token('hubspot'))
@@ -401,22 +469,14 @@ def respond_wrike() -> dict:
 
         # read the data from the POST method.
         data = request.json[0]
-
         print(data)
 
-        # Parse the JSON data from the request
-        event_type = data.get('eventType')
+        webhook_id = data.get('webhookId')
+        if webhook_id == "2IEAEINT7JAABWOZU":
+            respond_wrike_marketing_sales(data=data)
 
-        # Find the appropriate handler for the event type
-        handler = event_handlers.get(event_type)
-
-        # If a handler exists, call it with the event data
-        if handler:
-            handler(data)
-            return 'Event handled', 200
         else:
-            return 'No handler for event type', 400
-
+            respond_wrike_procurement(data=data)
 
 
     except Exception as e:

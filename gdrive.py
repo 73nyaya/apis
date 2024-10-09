@@ -1,5 +1,6 @@
 from Google import Create_Service
 from typing import Optional
+from googleapiclient.errors import HttpError
 
 CLIENT_SECRET_FILE = 'Components/Credentials/credentials.json'
 API_NAME = 'drive'
@@ -115,5 +116,59 @@ def create_folder(parent_id: str, folder_name: str) -> Optional[str]:
         id = str(destination_folder.get('id'))
         print(f'Folder created, id: {id}')
         return id
-    except Exception as e:
-        print(f"An unexpected error occurred creating the folder: {e}")
+    except HttpError as error:
+        print(f"An unexpected error occurred creating the folder: {error}")
+        return None
+
+def rename_folder(folder_id: str, new_name: str) -> Optional[str]:
+    """
+    Renames a folder in Google Drive.
+    
+    Parameters:
+    - service: The Google Drive service object created by the Create_Service function.
+    - folder_id: The ID of the folder to rename.
+    - new_name: The new name for the folder.
+    
+    Returns:
+    - The ID of the renamed folder if successful, otherwise None.
+    """
+    try:
+        # Define the new metadata for the folder
+        folder_metadata = {
+            'name': new_name
+        }
+
+        # Update the folder name
+        updated_folder = service.files().update(
+            fileId=folder_id,
+            body=folder_metadata,
+            fields='id, name'
+        ).execute()
+
+        print(f"Folder renamed to '{updated_folder.get('name')}' with ID: {updated_folder.get('id')}")
+        return updated_folder.get('id')
+
+    except HttpError as error:
+        print(f"An error occurred: {error}")
+        return None
+    
+def delete_folder(folder_id: str) -> Optional[str]:
+    """
+    Deletes a Google Drive folder.
+
+    Args:
+        folder_id (str): The ID of the folder to delete.
+
+    Returns:
+        Optional String
+    """
+    try:
+        # Use the 'files' resource to delete the folder by its ID
+        service.files().delete(fileId=folder_id).execute()
+
+        return f"Folder with ID {folder_id} has been deleted successfully."
+        
+    except HttpError as error:
+        return f"An error occurred: {error}"
+        # Handle errors (e.g., file not found, permission errors)
+        
