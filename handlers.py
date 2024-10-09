@@ -401,7 +401,7 @@ event_handlers_ms = { #marketing and sales
 
 def handle_folder_created_pr(data: dict) -> Optional[str]:
     project_id = data.get('folderId')
-    webhook_folder_id = data.get('weebhookId')
+    webhook_folder_id = data.get('webhookId')
     project = Project(project_id=project_id)
     project_information = get_project_info(project_id_str=project_id)
     folder_title = project_information.get('title')
