@@ -411,15 +411,16 @@ def handle_folder_created_pr(data: dict) -> Optional[str]:
         update_translator(translator_case=Translators.procurement.value, key=project_id, value=folder_id)
     return folder_id
 
-def handle_folder_deleted_pr(data: dict) -> Optional[str]:
+def handle_folder_deleted_pr(data: dict) -> None:
     project_id = data.get('folderId')
     procurement_translator = get_translator(translator_case=Translators.procurement.value)
     folder_id = procurement_translator[project_id]
     if folder_id is None:
-        return 'Project not in translator'
+        print('Project not in translator')
     else:
+        output = delete_folder(folder_id=folder_id)
         delete_translator_record(translator_case=Translators.procurement.value, key=project_id )
-        return delete_folder(folder_id=folder_id)
+        print(output)
 
 def handle_folder_title_changed_pr(data:dict) -> Optional[str]:
     project_id = data.get('folderId')
