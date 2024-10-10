@@ -425,7 +425,8 @@ def handle_folder_deleted_pr(data: dict) -> None:
 def handle_folder_title_changed_pr(data:dict) -> Optional[str]:
     project_id = data.get('folderId')
     folder_id=get_translator(translator_case=Translators.procurement.value)[project_id]
-    project_name = get_project_name(project_id_str=project_id)
+    print('folder_id', folder_id)
+    project_name = data.get('title')
     return rename_folder(folder_id=folder_id, new_name=project_name)
 
 event_handlers_pa = { #procurement and asset management Purchase Request

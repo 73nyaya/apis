@@ -142,7 +142,8 @@ def rename_folder(folder_id: str, new_name: str) -> Optional[str]:
         updated_folder = service.files().update(
             fileId=folder_id,
             body=folder_metadata,
-            fields='id, name'
+            fields='id, name',
+            supportsAllDrives=True
         ).execute()
 
         print(f"Folder renamed to '{updated_folder.get('name')}' with ID: {updated_folder.get('id')}")
@@ -164,7 +165,7 @@ def delete_folder(folder_id: str) -> Optional[str]:
     """
     try:
         # Use the 'files' resource to delete the folder by its ID
-        service.files().delete(fileId=folder_id).execute()
+        service.files().delete(fileId=folder_id, supportsAllDrives=True).execute()
 
         return f"Folder with ID {folder_id} has been deleted successfully."
         
