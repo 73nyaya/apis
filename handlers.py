@@ -474,7 +474,7 @@ def respond_wrike() -> dict:
         print(data)
 
         webhook_id = data.get('webhookId')
-        if webhook_id == "2IEAEINT7JAABWOZU":
+        if webhook_id == "IEAEINT7JAABWOZU":
             respond_wrike_marketing_sales(data=data)
 
         else:
